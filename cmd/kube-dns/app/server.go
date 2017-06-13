@@ -39,6 +39,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/tools/record"
 )
 
 type KubeDNSServer struct {
@@ -48,6 +49,7 @@ type KubeDNSServer struct {
 	dnsBindAddress string
 	dnsPort        int
 	nameServers    string
+	records        *map[string]string
 	kd             *dns.KubeDNS
 }
 
@@ -81,6 +83,7 @@ func NewKubeDNSServerDefault(config *options.KubeDNSConfig) *KubeDNSServer {
 		dnsBindAddress: config.DNSBindAddress,
 		dnsPort:        config.DNSPort,
 		nameServers:    config.NameServers,
+		records: 	config.Records,
 		kd:             dns.NewKubeDNS(kubeClient, config.ClusterDomain, config.InitialSyncTimeout, configSync),
 	}
 }
@@ -177,6 +180,7 @@ func (d *KubeDNSServer) startSkyDNSServer() {
 	skydnsConfig := &server.Config{
 		Domain:  d.domain,
 		DnsAddr: fmt.Sprintf("%s:%d", d.dnsBindAddress, d.dnsPort),
+		Records: d.records,
 	}
 	if d.nameServers != "" {
 		for _, nameServer := range strings.Split(d.nameServers, ",") {
