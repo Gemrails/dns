@@ -78,7 +78,7 @@ type Config struct {
 	// Stub zones support. Pointer to a map that we refresh when we see
 	// an update. Map contains domainname -> nameserver:port
 	stub *map[string][]string
-	Records *map[string][]string
+	Records string
 }
 
 func SetDefaults(config *Config) error {

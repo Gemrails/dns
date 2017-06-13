@@ -48,7 +48,7 @@ type KubeDNSServer struct {
 	dnsBindAddress string
 	dnsPort        int
 	nameServers    string
-	records        *map[string]string
+	records        string
 	kd             *dns.KubeDNS
 }
 

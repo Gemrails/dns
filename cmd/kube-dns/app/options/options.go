@@ -43,7 +43,7 @@ type KubeDNSConfig struct {
 	DNSPort        int
 
 	Federations map[string]string
-	Records map[string]string
+	Records string
 
 	ConfigMapNs string
 	ConfigMap   string
@@ -172,9 +172,9 @@ func (s *KubeDNSConfig) AddFlags(fs *pflag.FlagSet) {
 			" domain names to which this cluster belongs. Example:"+
 			" \"myfederation1=example.com,myfederation2=example2.com,myfederation3=example.com\"."+
 			" It is an error to set both the federations and config-map or config-dir flags.")
-	fs.Var(federationsVar{s.Records}, "records",
-		"example:"+
-		"\" download.goodrain.me=1.2.3.4,console.goodrain.me=2.3.4.5\".")
+	fs.StringVar(&s.Records, "records", s.Records,
+		"default domain name resolution"+
+			"example:"+ "\" download.goodrain.me=1.2.3.4,console.goodrain.me=2.3.4.5\".")
 
 	fs.MarkDeprecated("federations", "use config-dir instead. Will be removed in future version")
 

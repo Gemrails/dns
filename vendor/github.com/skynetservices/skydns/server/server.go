@@ -145,6 +145,7 @@ func (s *server) ServeDNS(w dns.ResponseWriter, req *dns.Msg) {
 
 	q := req.Question[0]
 	name := strings.ToLower(q.Name)
+	logf("records %s", s.config.Records)
 	logf("Qtype print %s", name)
 	logf("charge rege_domain, ", q.Name, q.Qtype)
 	if q.Qtype == dns.TypeANY {
