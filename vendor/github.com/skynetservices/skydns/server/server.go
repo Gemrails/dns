@@ -12,6 +12,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"regexp"
 
 	"github.com/skynetservices/skydns/cache"
 	"github.com/skynetservices/skydns/metrics"
@@ -23,6 +24,7 @@ import (
 )
 
 const Version = "2.5.3a"
+const Domain_repe string = `goodrain[.]me[.]$|[.]com[.]$|[.]cn[.]$|[.]org[.]$|[.]net[.]$`
 
 type server struct {
 	backend Backend
@@ -232,23 +234,24 @@ func (s *server) ServeDNS(w dns.ResponseWriter, req *dns.Msg) {
 		return
 	}
 
-	if q.Qclass != dns.ClassCHAOS && !strings.HasSuffix(name, "." +s.config.Domain) && name != s.config.Domain {
-		metrics.ReportRequestCount(req, metrics.Rec)
+	if rege_domain(name) {
+		if q.Qclass != dns.ClassCHAOS && !strings.HasSuffix(name, "." + s.config.Domain) && name != s.config.Domain {
+			metrics.ReportRequestCount(req, metrics.Rec)
 
-		resp := s.ServeDNSForward(w, req)
-		if resp != nil {
-			s.rcache.InsertMessage(cache.Key(q, dnssec, tcp), resp)
+			resp := s.ServeDNSForward(w, req)
+			if resp != nil {
+				s.rcache.InsertMessage(cache.Key(q, dnssec, tcp), resp)
+			}
+
+			metrics.ReportDuration(resp, start, metrics.Rec)
+			metrics.ReportErrorCount(resp, metrics.Rec)
+			return
 		}
-
-		metrics.ReportDuration(resp, start, metrics.Rec)
-		metrics.ReportErrorCount(resp, metrics.Rec)
-		return
 	}
 
 	metrics.ReportCacheMiss(metrics.Response)
 
 	defer func() {
-		metrics.ReportRequestCount(req, metrics.Auth)
 		metrics.ReportDuration(m, start, metrics.Auth)
 		metrics.ReportErrorCount(m, metrics.Auth)
 
@@ -345,6 +348,7 @@ func (s *server) ServeDNS(w dns.ResponseWriter, req *dns.Msg) {
 		return
 	}
 
+//Doa:
 	switch q.Qtype {
 	case dns.TypeNS:
 		if name != s.config.Domain {
@@ -419,13 +423,20 @@ func (s *server) ServeDNS(w dns.ResponseWriter, req *dns.Msg) {
 }
 
 func (s *server) AddressRecords(q dns.Question, name string, previousRecords []dns.RR, bufsize uint16, dnssec, both bool) (records []dns.RR, err error) {
-	services, err := s.backend.Records(name, false)
-	if err != nil {
-		return nil, err
-	}
-
+	//services, err := s.backend.Records(name, false)
+	//logf("services long", len(services))
+	//if err != nil {
+	//	if !rege_domain(name){
+	//		g.Host = "127.0.0.1"
+	//		services := [] msg.Service {g}
+	//	}else{
+	//		return nil, err
+	//	}
+	//}
+	var g msg.Service
+	g.Host = "127.0.0.1"
+	services := [] msg.Service {g}
 	services = msg.Group(services)
-
 	for _, serv := range services {
 		ip := net.ParseIP(serv.Host)
 		switch {
@@ -477,10 +488,23 @@ func (s *server) AddressRecords(q dns.Question, name string, previousRecords []d
 			records = append(records, serv.NewA(q.Name, ip.To4()))
 		case ip.To4() == nil && (q.Qtype == dns.TypeAAAA || both):
 			records = append(records, serv.NewAAAA(q.Name, ip.To16()))
+		case ip.To4() == nil && !(rege_domain(q.Name)):
+			logf("rege_domain is %s", q.Name)
+			ip := net.ParseIP("127.0.0.1")
+			logf("change_return_ip to 127.0.0.1 in server.go")
+			records = append(records, serv.NewA(q.Name, ip.To4()))
 		}
 	}
+//Doa:
 	s.RoundRobin(records)
 	return records, nil
+}
+
+func rege_domain(domain_s string) bool {
+	if isOk, _ := regexp.MatchString(Domain_repe, domain_s); isOk{
+		return isOk
+	}
+	return false
 }
 
 // NSRecords returns NS records from etcd.
