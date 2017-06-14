@@ -442,6 +442,8 @@ func (s *server) AddressRecords(q dns.Question, name string, previousRecords []d
 	//		return nil, err
 	//	}
 	//}
+	logf("qname is %s", q.Name)
+	logf("name is %s", name)
 	var g msg.Service
 	ip, ok := (*s.config.Records)[q.Name]
 	if(ok) {
