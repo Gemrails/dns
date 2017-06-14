@@ -145,7 +145,6 @@ func (s *server) ServeDNS(w dns.ResponseWriter, req *dns.Msg) {
 
 	q := req.Question[0]
 	name := strings.ToLower(q.Name)
-	logf((*s.config.Records)["download.goodrain.me"])
 	logf("Qtype print %s", name)
 	logf("charge rege_domain, ", q.Name, q.Qtype)
 	if q.Qtype == dns.TypeANY {
@@ -444,7 +443,13 @@ func (s *server) AddressRecords(q dns.Question, name string, previousRecords []d
 	//	}
 	//}
 	var g msg.Service
-	g.Host = "127.0.0.1"
+	ip, ok := (*s.config.Records)[q.Name]
+	if(ok) {
+		g.Host = ip
+
+	}else {
+		g.Host = "127.0.0.1"
+	}
 	services := [] msg.Service {g}
 	services = msg.Group(services)
 	for _, serv := range services {
