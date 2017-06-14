@@ -24,7 +24,8 @@ import (
 )
 
 const Version = "2.5.3a"
-const Domain_repe string = `goodrain[.]me[.]$|[.]com[.]$|[.]cn[.]$|[.]org[.]$|[.]net[.]$`
+//const Domain_repe string = `goodrain[.]me[.]$|[.]com[.]$|[.]cn[.]$|[.]org[.]$|[.]net[.]$`
+const Domain_repe string = `[.]com[.]$|[.]cn[.]$|[.]org[.]$|[.]net[.]$|[.]io[.]$`
 
 type server struct {
 	backend Backend
@@ -240,6 +241,7 @@ func (s *server) ServeDNS(w dns.ResponseWriter, req *dns.Msg) {
 	logf("3")
 	logf("after3 domain is %v", name)
 	if rege_domain(name) {
+		logf("come in q.Qclass")
 		if q.Qclass != dns.ClassCHAOS && !strings.HasSuffix(name, "." + s.config.Domain) && name != s.config.Domain {
 			metrics.ReportRequestCount(req, metrics.Rec)
 
