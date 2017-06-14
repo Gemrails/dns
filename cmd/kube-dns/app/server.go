@@ -174,12 +174,24 @@ func validateHostAndPort(hostAndPort string) error {
 	return nil
 }
 
+func splitRecords(records string) *map[string]string {
+	//"download.goodrain.me=10.18.1.1,console.goodrain.me=10.18.1.2,goodrain.me=10.18.1.3"
+	mm := strings.Split(records, ",")
+	recordMaps := make(map[string]string)
+	for _, value := range mm {
+		nn := strings.Split(value, "=")
+		recordMaps[nn[0]] = nn[1]
+	}
+	return &recordMaps
+}
+
 func (d *KubeDNSServer) startSkyDNSServer() {
 	glog.V(0).Infof("Starting SkyDNS server (%v:%v)", d.dnsBindAddress, d.dnsPort)
+
 	skydnsConfig := &server.Config{
 		Domain:  d.domain,
 		DnsAddr: fmt.Sprintf("%s:%d", d.dnsBindAddress, d.dnsPort),
-		Records: d.records,
+		Records: splitRecords(d.records),
 	}
 	if d.nameServers != "" {
 		for _, nameServer := range strings.Split(d.nameServers, ",") {
