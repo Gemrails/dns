@@ -179,7 +179,7 @@ func splitRecords(records string) *map[string]string {
 	mm := strings.Split(records, ",")
 	recordMaps := make(map[string]string)
 	for _, value := range mm {
-		nn := strings.Split(value, "=")
+		nn := strings.Split(value, ":")
 		recordMaps[nn[0]+"."] = nn[1]
 	}
 	return &recordMaps

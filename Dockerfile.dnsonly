@@ -1,0 +1,14 @@
+FROM alpine
+
+MAINTAINER pujielan <pujielan@google.com>
+
+ADD ./bin/amd64/kube-dns /usr/bin/
+ADD .start.sh /etc/
+RUN chmod +x /usr/bin/kube-dns && \
+    chmod +x /etc/start.sh
+
+EXPOSE 53
+WORKDIR /etc/
+CMD bash start.sh
+
+
